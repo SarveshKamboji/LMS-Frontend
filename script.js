@@ -15,7 +15,7 @@ const motivationMessages = [
     "💪 You're crushing it! Stay focused!",
     "🚀 Amazing progress! The finish line is getting closer!",
     "🎯 Nailed it! Every topic brings you closer to your goal!",
-    "🏆 That's the spirit! Champions are built one lesson at a time!",
+    "🏆 Champions are built one lesson at a time!",
     "✨ Fantastic! Your dedication is paying off!",
     "🌟 Keep going — you're building something great!",
     "💡 Knowledge unlocked! You're on fire!",
@@ -75,21 +75,19 @@ async function apiCall(method, endpoint, authToken = null, data = null) {
         if (data) config.body = JSON.stringify(data);
 
         const url = buildUrl(endpoint);
-        console.log(`🔍 ${method} ${url}`);
         const response = await fetch(url, config);
-
         const text = await response.text();
+
         let result = {};
         if (text) {
             try { result = JSON.parse(text); }
-            catch { throw new Error(`Server error (${response.status}). Check Vercel logs.`); }
+            catch { throw new Error(`Server error (${response.status}).`); }
         }
         if (!response.ok) throw new Error(result.detail || `HTTP ${response.status}`);
         hideLoader();
         return result;
     } catch (error) {
         hideLoader();
-        console.error('❌ API Error:', error.message);
         showMessage(error.message, 'error');
         throw error;
     }
@@ -107,61 +105,49 @@ function setNavbarVisible(visible) {
 }
 
 function showLogin() {
-    hideAll();
-    setNavbarVisible(false);
+    hideAll(); setNavbarVisible(false);
     authContainer.classList.remove('hidden');
     document.getElementById('login-form').classList.remove('hidden');
 }
 
 function showSignup() {
-    hideAll();
-    setNavbarVisible(false);
+    hideAll(); setNavbarVisible(false);
     authContainer.classList.remove('hidden');
     document.getElementById('signup-form').classList.remove('hidden');
 }
 
 function showDashboard() {
-    hideAll();
-    authContainer.classList.add('hidden');
-    setNavbarVisible(true);
+    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
     document.getElementById('dashboard').classList.remove('hidden');
     loadDashboard();
 }
 
 function showCourses() {
-    hideAll();
-    authContainer.classList.add('hidden');
-    setNavbarVisible(true);
+    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
     document.getElementById('courses').classList.remove('hidden');
     loadCourses();
 }
 
 function showMyCourses() {
-    hideAll();
-    authContainer.classList.add('hidden');
-    setNavbarVisible(true);
+    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
     document.getElementById('my-courses').classList.remove('hidden');
     loadMyCourses();
 }
 
 function showProfile() {
-    hideAll();
-    authContainer.classList.add('hidden');
-    setNavbarVisible(true);
+    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
     document.getElementById('profile').classList.remove('hidden');
     loadProfile();
 }
 
 function showCourseTopics(courseId, courseTitle) {
-    hideAll();
-    authContainer.classList.add('hidden');
-    setNavbarVisible(true);
+    hideAll(); authContainer.classList.add('hidden'); setNavbarVisible(true);
     document.getElementById('course-topics').classList.remove('hidden');
     document.getElementById('courseTopicTitle').textContent = courseTitle;
     loadTopics(courseId);
 }
 
-// ─── Auth Check ──────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────
 async function checkAuthStatus() {
     token = localStorage.getItem('token');
     if (token) {
@@ -179,15 +165,12 @@ async function checkAuthStatus() {
     }
 }
 
-// ─── Event Listeners ─────────────────────────────────────────────
 function initEventListeners() {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
     const mobileMenu = document.getElementById('mobile-menu');
-
     if (!loginForm || !signupForm || !mobileMenu) {
-        setTimeout(initEventListeners, 100);
-        return;
+        setTimeout(initEventListeners, 100); return;
     }
 
     loginForm.addEventListener('submit', async (e) => {
@@ -195,9 +178,7 @@ function initEventListeners() {
         const btn = loginForm.querySelector('.btn-primary');
         const btnText = btn.querySelector('.btn-text');
         const btnLoader = btn.querySelector('.btn-loader');
-        btn.disabled = true;
-        btnText.style.opacity = '0';
-        btnLoader.style.display = 'inline-block';
+        btn.disabled = true; btnText.style.opacity = '0'; btnLoader.style.display = 'inline-block';
         try {
             const response = await apiCall('POST', 'login', null, {
                 email: document.getElementById('loginEmail').value.trim(),
@@ -210,25 +191,18 @@ function initEventListeners() {
             setTimeout(showDashboard, 800);
         } catch {
         } finally {
-            btn.disabled = false;
-            btnText.style.opacity = '1';
-            btnLoader.style.display = 'none';
+            btn.disabled = false; btnText.style.opacity = '1'; btnLoader.style.display = 'none';
         }
     });
 
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const password = document.getElementById('signupPassword').value;
-        if (password.length < 8) {
-            showMessage('Password must be at least 8 characters.', 'error');
-            return;
-        }
+        if (password.length < 8) { showMessage('Password must be at least 8 characters.', 'error'); return; }
         const btn = signupForm.querySelector('.btn-primary');
         const btnText = btn.querySelector('.btn-text');
         const btnLoader = btn.querySelector('.btn-loader');
-        btn.disabled = true;
-        btnText.style.opacity = '0';
-        btnLoader.style.display = 'inline-block';
+        btn.disabled = true; btnText.style.opacity = '0'; btnLoader.style.display = 'inline-block';
         try {
             await apiCall('POST', 'signup', null, {
                 name: document.getElementById('signupName').value.trim(),
@@ -240,9 +214,7 @@ function initEventListeners() {
             setTimeout(showLogin, 1500);
         } catch {
         } finally {
-            btn.disabled = false;
-            btnText.style.opacity = '1';
-            btnLoader.style.display = 'none';
+            btn.disabled = false; btnText.style.opacity = '1'; btnLoader.style.display = 'none';
         }
     });
 
@@ -261,79 +233,133 @@ async function loadDashboard() {
         document.getElementById('myCoursesCount').textContent = Array.isArray(myCoursesRes) ? myCoursesRes.length : 0;
         const subtitle = document.querySelector('#dashboard .page-header p');
         if (subtitle) subtitle.textContent = `Welcome back, ${currentUser} 👋`;
-    } catch (err) {
-        console.error('Dashboard load failed:', err);
+    } catch (err) { console.error(err); }
+}
+
+// ─── ENROLLMENT LOGIC ─────────────────────────────────────────────
+// ✅ Rule: User can only enroll in ONE new course at a time.
+//    To enroll in another, they must complete 70% of their CURRENT active course.
+//    "Active course" = the most recently enrolled course that is NOT yet 70% done.
+
+function getEnrollmentStatus(enrolledCourses) {
+    if (!enrolledCourses || enrolledCourses.length === 0) {
+        // No enrollments yet — can freely enroll in first course
+        return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
     }
+
+    // Find any course that is NOT yet 70% complete — that is the "active" course
+    const activeCourse = enrolledCourses.find(course => {
+        const progress = getProgress(course.id);
+        return progress < 70;
+    });
+
+    if (activeCourse) {
+        // There's an active course below 70% — cannot enroll in anything new
+        const progress = getProgress(activeCourse.id);
+        return {
+            canEnrollNew: false,
+            activeCourseId: activeCourse.id,
+            activeCourseName: activeCourse.title,
+            activeProgress: progress
+        };
+    }
+
+    // All enrolled courses are 70%+ complete — can enroll in one more
+    return { canEnrollNew: true, activeCourseId: null, activeCourseName: null };
 }
 
 // ─── All Courses ──────────────────────────────────────────────────
 async function loadCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('coursesGrid');
-    grid.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">Loading...</p>';
+    grid.innerHTML = '<p class="loading-text">Loading courses...</p>';
     try {
         const [courses, myCourses] = await Promise.all([
             apiCall('GET', 'courses', token),
             apiCall('GET', 'my-courses', token)
         ]);
+
         if (!Array.isArray(courses) || courses.length === 0) {
-            grid.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">No courses available.</p>';
+            grid.innerHTML = '<p class="loading-text">No courses available.</p>';
             return;
         }
+
         const enrolledIds = Array.isArray(myCourses) ? myCourses.map(c => c.id) : [];
+        const status = getEnrollmentStatus(Array.isArray(myCourses) ? myCourses : []);
+
+        // Update header hint
+        const hint = document.getElementById('enrollHint');
+        if (hint) {
+            if (!status.canEnrollNew && status.activeCourseId) {
+                hint.textContent = `Complete 70% of "${status.activeCourseName}" (${status.activeProgress}% done) to unlock next enrollment`;
+            } else if (enrolledIds.length === 0) {
+                hint.textContent = 'Enroll in your first course to get started!';
+            } else {
+                hint.textContent = 'All current courses are 70%+ complete — you can enroll in a new one!';
+            }
+        }
+
         grid.innerHTML = courses.map(course => {
             const enrolled = enrolledIds.includes(course.id);
-            // ✅ Check if user has 70%+ progress on any enrolled course to unlock new ones
-            const canEnroll = !enrolled ? checkCanEnrollNew() : true;
-            return `
-            <div class="course-card ${!canEnroll && !enrolled ? 'locked-card' : ''}">
-                <div class="course-card-icon"><i class="fas fa-book-open"></i></div>
-                <h3>${course.title}</h3>
-                ${!canEnroll && !enrolled ? `
-                    <div class="lock-notice">
-                        <i class="fas fa-lock"></i> Complete 70% of an enrolled course to unlock
+            const progress = getProgress(course.id);
+            const canEnroll = enrolled || status.canEnrollNew;
+
+            if (enrolled) {
+                return `
+                <div class="course-card enrolled-card">
+                    <div class="card-ribbon">Enrolled</div>
+                    <div class="course-icon-wrap"><i class="fas fa-book-open"></i></div>
+                    <h3>${course.title}</h3>
+                    <div class="progress-inline">
+                        <div class="progress-inline-bar">
+                            <div class="progress-inline-fill" style="width:${progress}%"></div>
+                        </div>
+                        <span>${progress}%</span>
                     </div>
-                ` : `
-                <button onclick="enrollCourse(${course.id}, this)" ${enrolled ? 'disabled' : ''}>
-                    ${enrolled ? '✓ Enrolled' : 'Enroll Now'}
-                </button>`}
+                    <button disabled>✓ Already Enrolled</button>
+                </div>`;
+            }
+
+            if (!canEnroll) {
+                return `
+                <div class="course-card locked-card">
+                    <div class="card-ribbon locked-ribbon"><i class="fas fa-lock"></i> Locked</div>
+                    <div class="course-icon-wrap locked-icon"><i class="fas fa-lock"></i></div>
+                    <h3>${course.title}</h3>
+                    <div class="lock-notice">
+                        Complete 70% of <strong>"${status.activeCourseName}"</strong> to unlock
+                    </div>
+                </div>`;
+            }
+
+            return `
+            <div class="course-card available-card">
+                <div class="card-ribbon available-ribbon">Available</div>
+                <div class="course-icon-wrap"><i class="fas fa-book-open"></i></div>
+                <h3>${course.title}</h3>
+                <button onclick="enrollCourse(${course.id}, this)">
+                    <i class="fas fa-plus-circle"></i> Enroll Now
+                </button>
             </div>`;
         }).join('');
+
     } catch {
-        grid.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">Failed to load courses.</p>';
+        grid.innerHTML = '<p class="loading-text">Failed to load courses.</p>';
     }
-}
-
-// ✅ Check if user has completed 70%+ on at least one course
-function checkCanEnrollNew() {
-    // If user has no enrollments yet, they can freely enroll
-    const allKeys = Object.keys(localStorage).filter(k => k.startsWith(`topiccount_`));
-    if (allKeys.length === 0) return true;
-
-    for (const key of allKeys) {
-        const courseId = key.replace('topiccount_', '');
-        const total = parseInt(localStorage.getItem(key) || '0');
-        if (total === 0) continue;
-        const completed = getCompletedTopics(courseId);
-        const percent = Math.round((completed.length / total) * 100);
-        if (percent >= 70) return true;
-    }
-    return false;
 }
 
 async function enrollCourse(courseId, btn) {
     if (!token) return showLogin();
-    const original = btn.textContent;
+    const original = btn.innerHTML;
     btn.disabled = true;
-    btn.textContent = 'Enrolling...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enrolling...';
     try {
         await apiCall('POST', `enroll/${courseId}`, token);
-        showMessage('Successfully enrolled! 🎉', 'success');
-        btn.textContent = '✓ Enrolled';
-        btn.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+        showMessage('Successfully enrolled! 🎉 Start learning!', 'success');
+        setTimeout(loadCourses, 800);
     } catch {
         btn.disabled = false;
-        btn.textContent = original;
+        btn.innerHTML = original;
     }
 }
 
@@ -341,44 +367,53 @@ async function enrollCourse(courseId, btn) {
 async function loadMyCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('myCoursesGrid');
-    grid.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">Loading...</p>';
+    grid.innerHTML = '<p class="loading-text">Loading your courses...</p>';
     try {
         const courses = await apiCall('GET', 'my-courses', token);
         if (!Array.isArray(courses) || courses.length === 0) {
-            grid.innerHTML = `<p style="text-align:center;color:white;font-size:1.1rem;grid-column:1/-1">
-                No enrolled courses yet.
-                <a href="#" onclick="showCourses()" style="color:#ffd700;font-weight:600;"> Browse Courses →</a>
-            </p>`;
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-graduation-cap"></i>
+                    <p>No enrolled courses yet.</p>
+                    <a href="#" onclick="showCourses()" class="empty-cta">Browse Courses →</a>
+                </div>`;
             return;
         }
         grid.innerHTML = courses.map(course => {
             const progress = getProgress(course.id);
-            const progressColor = progress >= 70 ? '#27ae60' : progress >= 40 ? '#f39c12' : '#667eea';
+            const colorClass = progress >= 70 ? 'green' : progress >= 40 ? 'orange' : 'blue';
             return `
-            <div class="course-card clickable" onclick="showCourseTopics(${course.id}, '${course.title.replace(/'/g, "\\'")}')">
-                <div class="course-card-icon"><i class="fas fa-play-circle"></i></div>
+            <div class="course-card my-course-card" onclick="showCourseTopics(${course.id}, '${course.title.replace(/'/g, "\\'")}')">
+                <div class="course-icon-wrap"><i class="fas fa-play-circle"></i></div>
                 <h3>${course.title}</h3>
-                <div class="enrolled-badge"><i class="fas fa-check-circle"></i> Enrolled</div>
-                ${progress >= 70 ? '<div class="unlocked-badge"><i class="fas fa-unlock"></i> 70%+ — Can enroll new courses</div>' : ''}
-                <div class="mini-progress">
-                    <div class="mini-progress-fill" style="width:${progress}%;background:${progressColor}"></div>
+                ${progress >= 70 ? '<div class="badge-70"><i class="fas fa-unlock-alt"></i> 70%+ Unlocked</div>' : ''}
+                <div class="progress-ring-wrap">
+                    <svg class="progress-ring" viewBox="0 0 60 60">
+                        <circle cx="30" cy="30" r="24" fill="none" stroke="#e8e8e8" stroke-width="5"/>
+                        <circle cx="30" cy="30" r="24" fill="none"
+                            stroke="${progress >= 70 ? '#27ae60' : progress >= 40 ? '#f39c12' : '#667eea'}"
+                            stroke-width="5"
+                            stroke-dasharray="${2 * Math.PI * 24}"
+                            stroke-dashoffset="${2 * Math.PI * 24 * (1 - progress / 100)}"
+                            stroke-linecap="round"
+                            transform="rotate(-90 30 30)"/>
+                        <text x="30" y="35" text-anchor="middle" font-size="11" font-weight="700"
+                            fill="${progress >= 70 ? '#27ae60' : progress >= 40 ? '#f39c12' : '#667eea'}">${progress}%</text>
+                    </svg>
                 </div>
-                <p class="mini-progress-label">${progress}% complete — Click to view topics</p>
+                <p class="click-hint"><i class="fas fa-mouse-pointer"></i> Click to view topics</p>
             </div>`;
         }).join('');
     } catch {
-        grid.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">Failed to load your courses.</p>';
+        grid.innerHTML = '<p class="loading-text">Failed to load your courses.</p>';
     }
 }
 
-// ─── Progress Helpers ─────────────────────────────────────────────
-function getProgressKey(courseId) {
-    return `progress_${currentUser}_${courseId}`;
-}
+// ─── Progress ─────────────────────────────────────────────────────
+function getProgressKey(courseId) { return `progress_${currentUser}_${courseId}`; }
 
 function getCompletedTopics(courseId) {
-    const key = getProgressKey(courseId);
-    const stored = localStorage.getItem(key);
+    const stored = localStorage.getItem(getProgressKey(courseId));
     return stored ? JSON.parse(stored) : [];
 }
 
@@ -395,69 +430,55 @@ function updateProgressUI(courseId, completedCount, totalCount) {
     const text = document.getElementById('progressText');
     if (fill) {
         fill.style.width = `${percent}%`;
-        fill.style.background = percent >= 70
-            ? 'linear-gradient(90deg, #27ae60, #2ecc71)'
-            : percent >= 40
-            ? 'linear-gradient(90deg, #f39c12, #e67e22)'
-            : 'linear-gradient(90deg, #ffd700, #ff9500)';
+        fill.className = 'progress-bar-fill ' + (percent >= 70 ? 'fill-green' : percent >= 40 ? 'fill-orange' : 'fill-blue');
     }
     if (text) {
-        text.textContent = `${percent}% Complete (${completedCount}/${totalCount} topics)`;
+        text.innerHTML = `${percent}% Complete &nbsp;(${completedCount}/${totalCount} topics)`;
         if (percent >= 70) {
-            text.innerHTML += ' <span class="unlock-hint">🔓 You can now enroll in new courses!</span>';
+            text.innerHTML += ' &nbsp;<span class="unlock-hint">🔓 You can enroll in another course!</span>';
         }
     }
 }
 
-// ─── Topics & Checkbox (ONE-WAY LOCK) ─────────────────────────────
+// ─── Topics ───────────────────────────────────────────────────────
 function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
-    // ✅ Once checked, CANNOT be unchecked
-    if (!checkbox.checked) {
-        checkbox.checked = true; // force it back
-        return;
-    }
+    if (!checkbox.checked) { checkbox.checked = true; return; } // cannot uncheck
 
     const completed = getCompletedTopics(courseId);
-    if (completed.includes(topicId)) return; // already done
+    if (completed.includes(topicId)) return;
 
     completed.push(topicId);
     localStorage.setItem(getProgressKey(courseId), JSON.stringify(completed));
 
-    // Update card UI
     const card = document.getElementById(`topic-card-${topicId}`);
     if (card) {
         card.classList.add('completed');
         const statusEl = card.querySelector('.topic-status');
+        const numEl = card.querySelector('.topic-number');
         if (statusEl) statusEl.textContent = 'Done ✓';
+        if (numEl) numEl.innerHTML = '<i class="fas fa-check"></i>';
     }
 
     updateProgressUI(courseId, completed.length, totalTopics);
-
-    // ✅ Show motivation toast
     showMotivationToast(getRandomMotivation());
 
-    // ✅ Check if just hit 70%
     const percent = Math.round((completed.length / totalTopics) * 100);
-    if (percent >= 70 && completed.length > 0) {
-        const prev = Math.round(((completed.length - 1) / totalTopics) * 100);
-        if (prev < 70) {
-            // Just crossed 70% threshold
-            setTimeout(() => {
-                showMotivationToast('🎊 You\'ve reached 70%! You can now enroll in new courses!');
-            }, 4500);
-        }
+    const prevPercent = Math.round(((completed.length - 1) / totalTopics) * 100);
+    if (percent >= 70 && prevPercent < 70) {
+        setTimeout(() => {
+            showMotivationToast('🎊 You\'ve hit 70%! You can now enroll in another course!');
+        }, 4500);
     }
 }
 
 async function loadTopics(courseId) {
     const list = document.getElementById('topicsList');
-    list.innerHTML = '<p style="color:white;text-align:center;">Loading topics...</p>';
+    list.innerHTML = '<p class="loading-text">Loading topics...</p>';
     try {
         const data = await apiCall('GET', `courses/${courseId}/topics`, token);
         const topics = data.topics || [];
 
         localStorage.setItem(`topiccount_${courseId}`, topics.length);
-
         const completed = getCompletedTopics(courseId);
         updateProgressUI(courseId, completed.length, topics.length);
 
@@ -473,9 +494,7 @@ async function loadTopics(courseId) {
         list.innerHTML = topics.map((topic, index) => {
             const isDone = completed.includes(topic.id);
             const youtubeId = extractYoutubeId(topic.link);
-            const thumbnail = youtubeId
-                ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`
-                : null;
+            const thumbnail = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null;
 
             return `
             <div class="topic-card ${isDone ? 'completed' : ''}" id="topic-card-${topic.id}">
@@ -504,9 +523,8 @@ async function loadTopics(courseId) {
                 </div>
             </div>`;
         }).join('');
-
     } catch {
-        list.innerHTML = '<p style="color:white;text-align:center;">Failed to load topics.</p>';
+        list.innerHTML = '<p class="loading-text">Failed to load topics.</p>';
     }
 }
 
@@ -523,9 +541,7 @@ async function loadProfile() {
         const user = await apiCall('GET', `users/${encodeURIComponent(currentUser)}`, token);
         document.getElementById('profileName').textContent = user.name;
         document.getElementById('profileEmail').textContent = user.email;
-    } catch {
-        showMessage('Failed to load profile.', 'error');
-    }
+    } catch { showMessage('Failed to load profile.', 'error'); }
 }
 
 function editProfile() { showMessage('Edit profile feature coming soon!', 'success'); }
@@ -535,19 +551,15 @@ async function deleteAccount() {
     try {
         await apiCall('DELETE', `users/${encodeURIComponent(currentUser)}`, token);
         logout();
-    } catch {
-        showMessage('Failed to delete account.', 'error');
-    }
+    } catch { showMessage('Failed to delete account.', 'error'); }
 }
 
 function logout() {
-    currentUser = null;
-    token = null;
+    currentUser = null; token = null;
     localStorage.removeItem('token');
     showLogin();
 }
 
-// ─── Init ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initEventListeners();
     checkAuthStatus();

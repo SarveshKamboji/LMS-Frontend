@@ -113,7 +113,7 @@
         <div id="courses" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-book-open"></i> All Courses</h1>
-                <p style="color:rgba(255,255,255,0.8);font-size:0.95rem;">Complete 70% of a course to unlock enrolling in new ones</p>
+                <span class="enroll-hint" id="enrollHint">Loading enrollment status...</span>
             </header>
             <div class="courses-grid" id="coursesGrid"></div>
         </div>
@@ -122,7 +122,7 @@
         <div id="my-courses" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-heart"></i> My Courses</h1>
-                <p style="color:rgba(255,255,255,0.8);font-size:1rem;">Click on a course to view topics</p>
+                <p>Click on a course to view topics</p>
             </header>
             <div class="courses-grid" id="myCoursesGrid"></div>
         </div>
@@ -136,7 +136,7 @@
                 <h1><i class="fas fa-play-circle"></i> <span id="courseTopicTitle">Course</span></h1>
                 <div class="progress-bar-container">
                     <div class="progress-bar-track">
-                        <div class="progress-bar-fill" id="progressFill"></div>
+                        <div class="progress-bar-fill fill-blue" id="progressFill"></div>
                     </div>
                     <span class="progress-text" id="progressText">0% Complete</span>
                 </div>
@@ -151,13 +151,20 @@
             </header>
             <div class="profile-container">
                 <div class="profile-card">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
                     <div class="profile-info">
                         <h3 id="profileName">Loading...</h3>
                         <p id="profileEmail">Loading...</p>
                     </div>
                     <div class="profile-actions">
-                        <button class="btn-outline" onclick="editProfile()">Edit Profile</button>
-                        <button class="btn-danger" onclick="deleteAccount()">Delete Account</button>
+                        <button class="btn-outline" onclick="editProfile()">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                        <button class="btn-danger" onclick="deleteAccount()">
+                            <i class="fas fa-trash-alt"></i> Delete Account
+                        </button>
                     </div>
                 </div>
             </div>
