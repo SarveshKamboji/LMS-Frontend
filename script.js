@@ -2,7 +2,7 @@ let currentUser = null;
 let token = null;
 
 // ✅ FIX 1: Full Vercel backend URL — replace with YOUR actual Vercel domain
-const API_BASE = 'https://lms-backend.vercel.app/api';
+const API_BASE = 'https://lms-backend-kappa-kohl.vercel.app/api';
 
 const loader = document.getElementById('loader');
 const message = document.getElementById('message');
