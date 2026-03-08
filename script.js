@@ -1,13 +1,32 @@
 let currentUser = null;
 let token = null;
 
-// ✅ Your actual Vercel backend URL
 const API_BASE = 'https://lms-backend-kappa-kohl.vercel.app/api';
 
 const loader = document.getElementById('loader');
 const message = document.getElementById('message');
 const authContainer = document.getElementById('auth-container');
 const navbar = document.querySelector('.navbar');
+
+// ─── Motivation Messages ──────────────────────────────────────────
+const motivationMessages = [
+    "🔥 Great job! Keep that momentum going!",
+    "⭐ One step closer to mastery!",
+    "💪 You're crushing it! Stay focused!",
+    "🚀 Amazing progress! The finish line is getting closer!",
+    "🎯 Nailed it! Every topic brings you closer to your goal!",
+    "🏆 That's the spirit! Champions are built one lesson at a time!",
+    "✨ Fantastic! Your dedication is paying off!",
+    "🌟 Keep going — you're building something great!",
+    "💡 Knowledge unlocked! You're on fire!",
+    "🎉 Well done! Consistency is the key to success!",
+    "🦁 Unstoppable! Nothing can slow you down now!",
+    "⚡ Brilliant! Your future self will thank you!"
+];
+
+function getRandomMotivation() {
+    return motivationMessages[Math.floor(Math.random() * motivationMessages.length)];
+}
 
 // ─── Mobile Menu ─────────────────────────────────────────────────
 function toggleMobileMenu() {
@@ -26,6 +45,15 @@ function showMessage(text, type = 'success') {
     setTimeout(() => { message.style.display = 'none'; }, 5000);
 }
 function hideMessage() { message.style.display = 'none'; }
+
+// ─── Motivation Toast ─────────────────────────────────────────────
+function showMotivationToast(text) {
+    const toast = document.getElementById('motivationToast');
+    const toastText = document.getElementById('motivationText');
+    toastText.textContent = text;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+}
 
 // ─── URL Builder ─────────────────────────────────────────────────
 function buildUrl(endpoint) {
@@ -51,8 +79,6 @@ async function apiCall(method, endpoint, authToken = null, data = null) {
         const response = await fetch(url, config);
 
         const text = await response.text();
-        console.log(`📡 ${response.status} raw:`, text);
-
         let result = {};
         if (text) {
             try { result = JSON.parse(text); }
@@ -221,7 +247,6 @@ function initEventListeners() {
     });
 
     mobileMenu.addEventListener('click', toggleMobileMenu);
-    console.log('✅ Event listeners ready');
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────
@@ -258,18 +283,42 @@ async function loadCourses() {
         const enrolledIds = Array.isArray(myCourses) ? myCourses.map(c => c.id) : [];
         grid.innerHTML = courses.map(course => {
             const enrolled = enrolledIds.includes(course.id);
+            // ✅ Check if user has 70%+ progress on any enrolled course to unlock new ones
+            const canEnroll = !enrolled ? checkCanEnrollNew() : true;
             return `
-            <div class="course-card">
+            <div class="course-card ${!canEnroll && !enrolled ? 'locked-card' : ''}">
                 <div class="course-card-icon"><i class="fas fa-book-open"></i></div>
                 <h3>${course.title}</h3>
+                ${!canEnroll && !enrolled ? `
+                    <div class="lock-notice">
+                        <i class="fas fa-lock"></i> Complete 70% of an enrolled course to unlock
+                    </div>
+                ` : `
                 <button onclick="enrollCourse(${course.id}, this)" ${enrolled ? 'disabled' : ''}>
                     ${enrolled ? '✓ Enrolled' : 'Enroll Now'}
-                </button>
+                </button>`}
             </div>`;
         }).join('');
     } catch {
         grid.innerHTML = '<p style="color:white;text-align:center;grid-column:1/-1">Failed to load courses.</p>';
     }
+}
+
+// ✅ Check if user has completed 70%+ on at least one course
+function checkCanEnrollNew() {
+    // If user has no enrollments yet, they can freely enroll
+    const allKeys = Object.keys(localStorage).filter(k => k.startsWith(`topiccount_`));
+    if (allKeys.length === 0) return true;
+
+    for (const key of allKeys) {
+        const courseId = key.replace('topiccount_', '');
+        const total = parseInt(localStorage.getItem(key) || '0');
+        if (total === 0) continue;
+        const completed = getCompletedTopics(courseId);
+        const percent = Math.round((completed.length / total) * 100);
+        if (percent >= 70) return true;
+    }
+    return false;
 }
 
 async function enrollCourse(courseId, btn) {
@@ -281,6 +330,7 @@ async function enrollCourse(courseId, btn) {
         await apiCall('POST', `enroll/${courseId}`, token);
         showMessage('Successfully enrolled! 🎉', 'success');
         btn.textContent = '✓ Enrolled';
+        btn.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
     } catch {
         btn.disabled = false;
         btn.textContent = original;
@@ -303,13 +353,15 @@ async function loadMyCourses() {
         }
         grid.innerHTML = courses.map(course => {
             const progress = getProgress(course.id);
+            const progressColor = progress >= 70 ? '#27ae60' : progress >= 40 ? '#f39c12' : '#667eea';
             return `
             <div class="course-card clickable" onclick="showCourseTopics(${course.id}, '${course.title.replace(/'/g, "\\'")}')">
                 <div class="course-card-icon"><i class="fas fa-play-circle"></i></div>
                 <h3>${course.title}</h3>
                 <div class="enrolled-badge"><i class="fas fa-check-circle"></i> Enrolled</div>
+                ${progress >= 70 ? '<div class="unlocked-badge"><i class="fas fa-unlock"></i> 70%+ — Can enroll new courses</div>' : ''}
                 <div class="mini-progress">
-                    <div class="mini-progress-fill" style="width:${progress}%"></div>
+                    <div class="mini-progress-fill" style="width:${progress}%;background:${progressColor}"></div>
                 </div>
                 <p class="mini-progress-label">${progress}% complete — Click to view topics</p>
             </div>`;
@@ -319,9 +371,7 @@ async function loadMyCourses() {
     }
 }
 
-// ─── Topics & Progress ────────────────────────────────────────────
-
-// Progress stored in localStorage per course per user
+// ─── Progress Helpers ─────────────────────────────────────────────
 function getProgressKey(courseId) {
     return `progress_${currentUser}_${courseId}`;
 }
@@ -332,23 +382,9 @@ function getCompletedTopics(courseId) {
     return stored ? JSON.parse(stored) : [];
 }
 
-function toggleTopicComplete(courseId, topicId, totalTopics) {
-    const completed = getCompletedTopics(courseId);
-    const idx = completed.indexOf(topicId);
-    if (idx === -1) {
-        completed.push(topicId);
-    } else {
-        completed.splice(idx, 1);
-    }
-    localStorage.setItem(getProgressKey(courseId), JSON.stringify(completed));
-    updateProgressUI(courseId, completed.length, totalTopics);
-}
-
 function getProgress(courseId) {
     const completed = getCompletedTopics(courseId);
-    // We don't know total here, just return 0 if nothing saved
-    const key = `topiccount_${courseId}`;
-    const total = parseInt(localStorage.getItem(key) || '0');
+    const total = parseInt(localStorage.getItem(`topiccount_${courseId}`) || '0');
     if (!total) return 0;
     return Math.round((completed.length / total) * 100);
 }
@@ -357,8 +393,60 @@ function updateProgressUI(courseId, completedCount, totalCount) {
     const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const fill = document.getElementById('progressFill');
     const text = document.getElementById('progressText');
-    if (fill) fill.style.width = `${percent}%`;
-    if (text) text.textContent = `${percent}% Complete (${completedCount}/${totalCount} topics)`;
+    if (fill) {
+        fill.style.width = `${percent}%`;
+        fill.style.background = percent >= 70
+            ? 'linear-gradient(90deg, #27ae60, #2ecc71)'
+            : percent >= 40
+            ? 'linear-gradient(90deg, #f39c12, #e67e22)'
+            : 'linear-gradient(90deg, #ffd700, #ff9500)';
+    }
+    if (text) {
+        text.textContent = `${percent}% Complete (${completedCount}/${totalCount} topics)`;
+        if (percent >= 70) {
+            text.innerHTML += ' <span class="unlock-hint">🔓 You can now enroll in new courses!</span>';
+        }
+    }
+}
+
+// ─── Topics & Checkbox (ONE-WAY LOCK) ─────────────────────────────
+function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
+    // ✅ Once checked, CANNOT be unchecked
+    if (!checkbox.checked) {
+        checkbox.checked = true; // force it back
+        return;
+    }
+
+    const completed = getCompletedTopics(courseId);
+    if (completed.includes(topicId)) return; // already done
+
+    completed.push(topicId);
+    localStorage.setItem(getProgressKey(courseId), JSON.stringify(completed));
+
+    // Update card UI
+    const card = document.getElementById(`topic-card-${topicId}`);
+    if (card) {
+        card.classList.add('completed');
+        const statusEl = card.querySelector('.topic-status');
+        if (statusEl) statusEl.textContent = 'Done ✓';
+    }
+
+    updateProgressUI(courseId, completed.length, totalTopics);
+
+    // ✅ Show motivation toast
+    showMotivationToast(getRandomMotivation());
+
+    // ✅ Check if just hit 70%
+    const percent = Math.round((completed.length / totalTopics) * 100);
+    if (percent >= 70 && completed.length > 0) {
+        const prev = Math.round(((completed.length - 1) / totalTopics) * 100);
+        if (prev < 70) {
+            // Just crossed 70% threshold
+            setTimeout(() => {
+                showMotivationToast('🎊 You\'ve reached 70%! You can now enroll in new courses!');
+            }, 4500);
+        }
+    }
 }
 
 async function loadTopics(courseId) {
@@ -368,7 +456,6 @@ async function loadTopics(courseId) {
         const data = await apiCall('GET', `courses/${courseId}/topics`, token);
         const topics = data.topics || [];
 
-        // Save total count for progress calculation
         localStorage.setItem(`topiccount_${courseId}`, topics.length);
 
         const completed = getCompletedTopics(courseId);
@@ -393,14 +480,12 @@ async function loadTopics(courseId) {
             return `
             <div class="topic-card ${isDone ? 'completed' : ''}" id="topic-card-${topic.id}">
                 <div class="topic-left">
-                    <div class="topic-number">${index + 1}</div>
+                    <div class="topic-number">${isDone ? '<i class="fas fa-check"></i>' : index + 1}</div>
                     ${thumbnail ? `
-                    <div class="topic-thumbnail">
-                        <img src="${thumbnail}" alt="thumbnail" onerror="this.style.display='none'">
-                        <div class="play-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                    </div>` : ''}
+                    <a href="${topic.link}" target="_blank" class="topic-thumbnail">
+                        <img src="${thumbnail}" alt="thumbnail" onerror="this.parentElement.style.display='none'">
+                        <div class="play-overlay"><i class="fas fa-play"></i></div>
+                    </a>` : ''}
                 </div>
                 <div class="topic-content">
                     <h3 class="topic-title">${topic.title}</h3>
@@ -409,51 +494,26 @@ async function loadTopics(courseId) {
                     </a>
                 </div>
                 <div class="topic-right">
-                    <label class="checkbox-container">
-                        <input type="checkbox" 
-                            ${isDone ? 'checked' : ''} 
-                            onchange="toggleTopicComplete(${courseId}, ${topic.id}, ${topics.length})">
-                        <span class="checkmark"></span>
+                    <label class="checkbox-container" title="${isDone ? 'Completed — cannot unmark' : 'Mark as complete'}">
+                        <input type="checkbox"
+                            ${isDone ? 'checked' : ''}
+                            onchange="markTopicComplete(${courseId}, ${topic.id}, ${topics.length}, this)">
+                        <span class="checkmark ${isDone ? 'locked' : ''}"></span>
                     </label>
-                    <span class="topic-status">${isDone ? 'Done' : 'Pending'}</span>
+                    <span class="topic-status">${isDone ? 'Done ✓' : 'Pending'}</span>
                 </div>
             </div>`;
         }).join('');
-
-        // Update card styling on checkbox change
-        topics.forEach(topic => {
-            const checkbox = document.querySelector(`#topic-card-${topic.id} input[type=checkbox]`);
-            if (checkbox) {
-                checkbox.addEventListener('change', () => {
-                    const card = document.getElementById(`topic-card-${topic.id}`);
-                    const statusEl = card.querySelector('.topic-status');
-                    if (checkbox.checked) {
-                        card.classList.add('completed');
-                        statusEl.textContent = 'Done';
-                    } else {
-                        card.classList.remove('completed');
-                        statusEl.textContent = 'Pending';
-                    }
-                });
-            }
-        });
 
     } catch {
         list.innerHTML = '<p style="color:white;text-align:center;">Failed to load topics.</p>';
     }
 }
 
-// Extract YouTube video ID from URL
 function extractYoutubeId(url) {
     if (!url) return null;
-    const patterns = [
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/
-    ];
-    for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match) return match[1];
-    }
-    return null;
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+    return match ? match[1] : null;
 }
 
 // ─── Profile ──────────────────────────────────────────────────────
@@ -468,22 +528,18 @@ async function loadProfile() {
     }
 }
 
-function editProfile() {
-    showMessage('Edit profile feature coming soon!', 'success');
-}
+function editProfile() { showMessage('Edit profile feature coming soon!', 'success'); }
 
 async function deleteAccount() {
     if (!confirm('Are you sure? This cannot be undone.')) return;
     try {
         await apiCall('DELETE', `users/${encodeURIComponent(currentUser)}`, token);
-        showMessage('Account deleted.', 'success');
         logout();
     } catch {
         showMessage('Failed to delete account.', 'error');
     }
 }
 
-// ─── Logout ───────────────────────────────────────────────────────
 function logout() {
     currentUser = null;
     token = null;
@@ -493,7 +549,6 @@ function logout() {
 
 // ─── Init ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 App starting...');
     initEventListeners();
     checkAuthStatus();
 });

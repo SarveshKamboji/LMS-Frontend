@@ -9,6 +9,12 @@
 </head>
 <body>
 
+    <!-- Motivation Toast -->
+    <div class="motivation-toast" id="motivationToast">
+        <div class="toast-icon">🌟</div>
+        <span id="motivationText"></span>
+    </div>
+
     <nav class="navbar" style="display:none;">
         <div class="nav-container">
             <div class="nav-logo">
@@ -36,7 +42,7 @@
         <div class="loader" id="loader"></div>
         <div class="message" id="message"></div>
 
-        <!-- ─── Auth ─────────────────────────────────────── -->
+        <!-- Auth -->
         <div id="auth-container">
             <div class="auth-form" id="login-form">
                 <div class="auth-card">
@@ -85,7 +91,7 @@
             </div>
         </div>
 
-        <!-- ─── Dashboard ─────────────────────────────────── -->
+        <!-- Dashboard -->
         <div id="dashboard" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
@@ -103,15 +109,16 @@
             </div>
         </div>
 
-        <!-- ─── All Courses ────────────────────────────────── -->
+        <!-- All Courses -->
         <div id="courses" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-book-open"></i> All Courses</h1>
+                <p style="color:rgba(255,255,255,0.8);font-size:0.95rem;">Complete 70% of a course to unlock enrolling in new ones</p>
             </header>
             <div class="courses-grid" id="coursesGrid"></div>
         </div>
 
-        <!-- ─── My Courses ─────────────────────────────────── -->
+        <!-- My Courses -->
         <div id="my-courses" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-heart"></i> My Courses</h1>
@@ -120,7 +127,7 @@
             <div class="courses-grid" id="myCoursesGrid"></div>
         </div>
 
-        <!-- ─── Course Topics Page ─────────────────────────── -->
+        <!-- Course Topics Page -->
         <div id="course-topics" class="page-content hidden">
             <header class="page-header">
                 <button class="back-btn" onclick="showMyCourses()">
@@ -137,7 +144,7 @@
             <div class="topics-list" id="topicsList"></div>
         </div>
 
-        <!-- ─── Profile ────────────────────────────────────── -->
+        <!-- Profile -->
         <div id="profile" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-user-circle"></i> Profile</h1>
