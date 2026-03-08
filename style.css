@@ -18,6 +18,7 @@ body {
     min-height: calc(100vh - 80px);
 }
 
+/* ─── Navbar ─────────────────────────────────────────── */
 .navbar {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -60,8 +61,7 @@ body {
     text-decoration: none;
     color: #333;
     font-weight: 500;
-    transition: all 0.3s ease;
-    position: relative;
+    transition: color 0.3s ease;
 }
 
 .nav-link:hover {
@@ -100,11 +100,12 @@ body {
     transition: 0.3s;
 }
 
+/* ─── Auth ───────────────────────────────────────────── */
 #auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80vh;
+    min-height: 90vh;
 }
 
 .auth-form {
@@ -162,6 +163,7 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* ─── Buttons ────────────────────────────────────────── */
 .btn-primary {
     width: 100%;
     padding: 15px;
@@ -172,36 +174,39 @@ body {
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    position: relative;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     transition: all 0.3s ease;
+    position: relative;
+    min-height: 52px;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
 }
 
-.btn-primary.loading .btn-text {
-    opacity: 0;
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
+/* ✅ FIX: btn-loader hidden by default, shown via JS */
 .btn-loader {
     display: none;
     width: 20px;
     height: 20px;
-    border: 2px solid transparent;
+    border: 2px solid rgba(255,255,255,0.4);
     border-top: 2px solid white;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-.btn-primary.loading .btn-loader {
-    display: inline-block;
+    animation: spin 0.8s linear infinite;
+    position: absolute;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
+    0%   { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
@@ -220,13 +225,15 @@ body {
     text-decoration: underline;
 }
 
+/* ─── Pages ──────────────────────────────────────────── */
 .page-content {
-    animation: fadeIn 0.5s ease-in;
+    animation: fadeIn 0.4s ease-in;
+    padding-top: 20px;
 }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .page-header {
@@ -250,6 +257,7 @@ body {
     font-size: 1.1rem;
 }
 
+/* ─── Stats ──────────────────────────────────────────── */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -266,12 +274,10 @@ body {
     align-items: center;
     gap: 20px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
-.stat-card:hover {
-    transform: translateY(-5px);
-}
+.stat-card:hover { transform: translateY(-5px); }
 
 .stat-card i {
     font-size: 3rem;
@@ -285,9 +291,10 @@ body {
     margin-bottom: 5px;
 }
 
+/* ─── Course Cards ───────────────────────────────────── */
 .courses-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 25px;
 }
 
@@ -298,18 +305,17 @@ body {
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
-    cursor: pointer;
 }
 
 .course-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
 .course-card h3 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: #333;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .course-card button {
@@ -320,21 +326,23 @@ body {
     border: none;
     border-radius: 10px;
     font-weight: 600;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.course-card button:hover {
+.course-card button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .course-card button:disabled {
-    background: #ccc;
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
     cursor: not-allowed;
     transform: none;
 }
 
+/* ─── Profile ────────────────────────────────────────── */
 .profile-container {
     max-width: 600px;
     margin: 0 auto;
@@ -399,73 +407,72 @@ body {
     box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
 }
 
+/* ─── Messages ───────────────────────────────────────── */
 .message {
     padding: 15px 20px;
     border-radius: 10px;
-    margin-bottom: 20px;
-    text-align:  center;
+    margin: 20px auto;
+    text-align: center;
     font-weight: 500;
     max-width: 500px;
-    margin: 20px auto;
     display: none;
+    animation: fadeIn 0.3s ease;
 }
 
 .message.success {
-    background: rgba(46, 204, 113, 0.9);
+    background: rgba(46, 204, 113, 0.92);
     color: white;
 }
 
 .message.error {
-    background: rgba(231, 76, 60, 0.9);
+    background: rgba(231, 76, 60, 0.92);
     color: white;
 }
 
+/* ─── Loader ─────────────────────────────────────────── */
 .loader {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 50px auto;
+    animation: spin 0.8s linear infinite;
+    margin: 30px auto;
     display: none;
 }
 
+/* ─── Utilities ──────────────────────────────────────── */
 .hidden {
     display: none !important;
 }
 
+/* ─── Mobile ─────────────────────────────────────────── */
 @media (max-width: 768px) {
     .nav-menu {
         position: fixed;
         left: -100%;
         top: 70px;
         flex-direction: column;
-        background-color: white;
+        background: white;
         width: 100%;
         text-align: center;
         transition: 0.3s;
         box-shadow: 0 10px 27px rgba(0,0,0,0.05);
         padding: 20px 0;
+        z-index: 999;
     }
 
-    .nav-menu.active {
-        left: 0;
-    }
+    .nav-menu.active { left: 0; }
 
-    .nav-toggle {
-        display: flex;
-    }
+    .nav-toggle { display: flex; }
 
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
+    .stats-grid { grid-template-columns: 1fr; }
 
-    .profile-actions {
-        flex-direction: column;
-    }
+    .profile-actions { flex-direction: column; align-items: center; }
 
-    .courses-grid {
-        grid-template-columns: 1fr;
-    }
+    .courses-grid { grid-template-columns: 1fr; }
+
+    .page-header h1 { font-size: 1.8rem; }
+
+    .auth-card { padding: 30px 20px; }
 }

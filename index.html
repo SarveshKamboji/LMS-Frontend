@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Portal - Dashboard</title>
+    <title>Course Portal</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
+
+    <!-- Navbar hidden by default; shown by JS after login -->
+    <nav class="navbar" style="display:none;">
         <div class="nav-container">
             <div class="nav-logo">
                 <i class="fas fa-graduation-cap"></i>
@@ -32,65 +34,60 @@
     </nav>
 
     <div class="container">
-        <!-- Loading Spinner -->
         <div class="loader" id="loader"></div>
-
-        <!-- Messages -->
         <div class="message" id="message"></div>
 
-        <!-- Auth Pages -->
+        <!-- Auth -->
         <div id="auth-container">
-            <!-- Login Form -->
+
+            <!-- Login -->
             <div class="auth-form" id="login-form">
                 <div class="auth-card">
                     <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
                     <form id="loginForm">
                         <div class="input-group">
                             <i class="fas fa-envelope"></i>
-                            <input type="email" id="loginEmail" placeholder="Email" required>
+                            <input type="email" id="loginEmail" placeholder="Email" required autocomplete="email">
                         </div>
                         <div class="input-group">
                             <i class="fas fa-lock"></i>
-                            <input type="password" id="loginPassword" placeholder="Password" required>
+                            <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password">
                         </div>
                         <button type="submit" class="btn-primary">
                             <span class="btn-text">Login</span>
                             <div class="btn-loader"></div>
                         </button>
-                        <p class="auth-switch">
-                            Don't have an account? <a href="#" onclick="showSignup()">Sign up</a>
-                        </p>
+                        <p class="auth-switch">Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
                     </form>
                 </div>
             </div>
 
-            <!-- Signup Form -->
+            <!-- Signup -->
             <div class="auth-form hidden" id="signup-form">
                 <div class="auth-card">
                     <h2><i class="fas fa-user-plus"></i> Create Account</h2>
                     <form id="signupForm">
                         <div class="input-group">
                             <i class="fas fa-user"></i>
-                            <input type="text" id="signupName" placeholder="Full Name" required>
+                            <input type="text" id="signupName" placeholder="Full Name" required autocomplete="name">
                         </div>
                         <div class="input-group">
                             <i class="fas fa-envelope"></i>
-                            <input type="email" id="signupEmail" placeholder="Email" required>
+                            <input type="email" id="signupEmail" placeholder="Email" required autocomplete="email">
                         </div>
                         <div class="input-group">
                             <i class="fas fa-lock"></i>
-                            <input type="password" id="signupPassword" placeholder="Password (min 8)" required>
+                            <input type="password" id="signupPassword" placeholder="Password (min 8 chars)" required minlength="8" autocomplete="new-password">
                         </div>
                         <button type="submit" class="btn-primary">
                             <span class="btn-text">Sign Up</span>
                             <div class="btn-loader"></div>
                         </button>
-                        <p class="auth-switch">
-                            Already have an account? <a href="#" onclick="showLogin()">Login</a>
-                        </p>
+                        <p class="auth-switch">Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
                     </form>
                 </div>
             </div>
+
         </div>
 
         <!-- Dashboard -->
@@ -102,42 +99,32 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <i class="fas fa-book"></i>
-                    <div>
-                        <h3 id="totalCourses">0</h3>
-                        <p>Total Courses</p>
-                    </div>
+                    <div><h3 id="totalCourses">0</h3><p>Total Courses</p></div>
                 </div>
                 <div class="stat-card">
                     <i class="fas fa-check-circle"></i>
-                    <div>
-                        <h3 id="myCoursesCount">0</h3>
-                        <p>My Courses</p>
-                    </div>
+                    <div><h3 id="myCoursesCount">0</h3><p>My Courses</p></div>
                 </div>
             </div>
         </div>
 
-        <!-- Courses Page -->
+        <!-- All Courses -->
         <div id="courses" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-book-open"></i> All Courses</h1>
             </header>
-            <div class="courses-grid" id="coursesGrid">
-                <!-- Courses will be loaded here -->
-            </div>
+            <div class="courses-grid" id="coursesGrid"></div>
         </div>
 
-        <!-- My Courses Page -->
+        <!-- My Courses -->
         <div id="my-courses" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-heart"></i> My Courses</h1>
             </header>
-            <div class="courses-grid" id="myCoursesGrid">
-                <!-- My courses will be loaded here -->
-            </div>
+            <div class="courses-grid" id="myCoursesGrid"></div>
         </div>
 
-        <!-- Profile Page -->
+        <!-- Profile -->
         <div id="profile" class="page-content hidden">
             <header class="page-header">
                 <h1><i class="fas fa-user-circle"></i> Profile</h1>
@@ -155,6 +142,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <script src="script.js"></script>
