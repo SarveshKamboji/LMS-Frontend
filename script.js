@@ -102,10 +102,18 @@ async function checkAuthStatus() {
             const user = await apiCall('GET', 'me', token);
             currentUser = user.logged_in_as;
             showDashboard();
-        } catch {
+        } catch (err) {
+            // ✅ Token expired or invalid — show message then redirect to login
             localStorage.removeItem('token');
             token = null;
-            showLogin();
+            currentUser = null;
+            // Only show expiry message if it was an auth error, not a network error
+            if (err.message && (err.message.includes('401') || err.message.includes('expired') || err.message.includes('Invalid'))) {
+                showLogin();
+                setTimeout(() => showMessage('Your session expired. Please log in again.', 'error'), 300);
+            } else {
+                showLogin();
+            }
         }
     } else {
         showLogin();
@@ -188,6 +196,7 @@ function initEventListeners() {
     if (mobileMenu) mobileMenu.addEventListener('click', toggleMobileMenu);
 }
 
+// ─── Shared helper: fetch progress for a list of courses ─────
 async function fetchProgressMap(courses) {
     const progressMap = {};
     await Promise.all(courses.map(async (course) => {
@@ -212,6 +221,7 @@ function calcPercent(progressMap, courseId) {
     return total > 0 ? Math.round((completed.length / total) * 100) : 0;
 }
 
+// ─── Dashboard ────────────────────────────────────────────────
 async function loadDashboard() {
     if (!token) return;
     try {
@@ -234,6 +244,7 @@ async function loadDashboard() {
         document.getElementById('myCoursesCount').textContent = myCourses.length;
         document.getElementById('learningStreak').textContent = streakRes.streak || 0;
 
+        // ✅ Progress from DB — works on any device
         const progressMap = await fetchProgressMap(myCourses);
         const totalCompleted = myCourses.reduce((sum, c) => {
             return sum + (progressMap[c.id]?.completed?.length || 0);
@@ -286,6 +297,7 @@ function loadDashboardFeatured(allCourses, enrolledCourses) {
         </div>`).join('');
 }
 
+// ─── All Courses ──────────────────────────────────────────────
 async function loadCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('coursesGrid');
@@ -374,6 +386,7 @@ async function enrollCourse(courseId, btn) {
     }
 }
 
+// ─── My Courses ───────────────────────────────────────────────
 async function loadMyCourses() {
     if (!token) return showLogin();
     const grid = document.getElementById('myCoursesGrid');
@@ -415,12 +428,13 @@ async function loadMyCourses() {
     }
 }
 
+// ─── Topics ───────────────────────────────────────────────────
 async function markTopicComplete(courseId, topicId, totalTopics, checkbox) {
     checkbox.checked = true;
     checkbox.disabled = true;
     try {
-        await apiCall('POST', `progress/${topicId}`, token); 
-    } catch (e) {  }
+        await apiCall('POST', `progress/${topicId}`, token); // ✅ Save to DB
+    } catch (e) { /* already marked or error — ignore */ }
 
     const card = document.getElementById(`topic-card-${topicId}`);
     if (card) {
@@ -450,6 +464,7 @@ async function loadTopics(courseId) {
     const list = document.getElementById('topicsList');
     list.innerHTML = '<p class="loading-text">Loading topics...</p>';
     try {
+        // ✅ Fetch topics + completed IDs from DB together
         const [topicsData, progressData] = await Promise.all([
             apiCall('GET', `courses/${courseId}/topics`, token),
             apiCall('GET', `progress/${courseId}`, token)
@@ -519,6 +534,7 @@ function updateProgressUI(courseId, completedCount, totalCount) {
     }
 }
 
+// ─── Profile ──────────────────────────────────────────────────
 async function loadProfile() {
     if (!token || !currentUser) return showLogin();
     try {
